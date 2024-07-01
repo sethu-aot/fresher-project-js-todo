@@ -64,46 +64,47 @@ document.addEventListener("DOMContentLoaded", function() {
         localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
+    function isDueDatePassed(dueDate) {
+        const currentDate = new Date();
+        const taskDueDate = new Date(dueDate);
+        return taskDueDate < currentDate;
+    }
+    
+
     function renderTasks() {
-       // Clears the existing task lists (taskList and completedTaskList).
         taskList.innerHTML = "";
         completedTaskList.innerHTML = "";
-
-        //Sorts tasks based on the selected sort order (newest or oldest).
-        const sortedTasks = sortTasks.value === "newest" 
-            //if true
-            ? tasks.slice().sort(function(a, b) {
-                return b.id - a.id;
-            }) 
-            //if false
-            : tasks.slice().sort(function(a, b) {
-                return a.id - b.id;
-            });
-
+    
+        const sortedTasks = sortTasks.value === "newest"
+            ? tasks.slice().sort((a, b) => b.id - a.id)
+            : tasks.slice().sort((a, b) => a.id - b.id);
+    
         sortedTasks.forEach(function(task) {
             const taskItem = document.createElement("li");
             taskItem.className = 'list-group-item border-top rounded';
+    
+            const dueDateClass = isDueDatePassed(task.dueDate) ? 'active-due-date' : 'text-muted';
+    
             taskItem.innerHTML = `
                 <div class="list-container">
-                <div>
-                    <input class="checkbox" type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTaskComplete(${task.id})">
-                </div>
-                <div>
-                    <span>${task.title}</span> ${task.completed 
-                        ? '<i style="color:green" class="bi bi-circle-fill"></i>' 
-                        : '<i style="color: #EBB705" class="bi bi-circle-fill"></i>'}
-                    <br>
-                    <span class="list-description">${task.description}</span> <br>
-                <small class=" ${!task.completed ? 'active-due-date':"text-muted" }"><i class="bi bi-calendar4-week"></i> by ${task.dueDate}</small>
-                </div>
+                    <div>
+                        <input class="checkbox" type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTaskComplete(${task.id})">
+                    </div>
+                    <div>
+                        <span>${task.title}</span> ${task.completed 
+                            ? '<i style="color:green" class="bi bi-circle-fill"></i>' 
+                            : '<i style="color: #EBB705" class="bi bi-circle-fill"></i>'}
+                        <br>
+                        <span class="list-description">${task.description}</span> <br>
+                        <small class="${!task.completed ? dueDateClass : 'text-muted'}"><i class="bi bi-calendar4-week"></i> by ${task.dueDate}</small>
+                    </div>
                 </div>
                 <div class="list-btn-icons">
                     <i class="bi bi-pencil-fill" style="cursor: pointer;" onclick="showEditModal(${task.id})"></i>
                     <i class="bi bi-trash" style="cursor: pointer;" onclick="showDeleteModal(${task.id})"></i>
-                    
                 </div>
             `;
-
+    
             if (task.completed) {
                 completedTaskList.appendChild(taskItem);
             } else {
@@ -111,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+    
 
     taskForm.addEventListener("submit", function(e) {
         //Prevents the default form submission behavior. || prevent page refreshing
